@@ -1,0 +1,119 @@
+const app = {
+    data: null,
+    currentView: 'cover', // 'cover', 'toc', หรือ 'chapter'
+    currentChapterIndex: 0,
+
+    init: async function() {
+        // 1. โหลดข้อมูลจากไฟล์ JSON
+        try {
+            const response = await fetch('data.json');
+            this.data = await response.json();
+            this.renderCover();
+        } catch (error) {
+            console.error("ไม่สามารถโหลดข้อมูลได้:", error);
+            document.getElementById('book-container').innerHTML = "<p>เกิดข้อผิดพลาดในการเปิดหนังสือ</p>";
+        }
+    },
+
+    // แสดงหน้าปก
+    renderCover: function() {
+        const container = document.getElementById('book-container');
+        document.getElementById('navigation').classList.add('hidden');
+        
+        container.innerHTML = `
+            <div class="cover-page fade-in">
+                <h1>${this.data.bookInfo.title}</h1>
+                <p>${this.data.bookInfo.subtitle}</p>
+                <img src="${this.data.bookInfo.coverImage}" alt="Cover Image">
+                <button class="btn-open" onclick="app.showTOC()">เปิดสมุด</button>
+            </div>
+        `;
+    },
+
+    // แสดงหน้าสารบัญ
+    showTOC: function() {
+        this.currentView = 'toc';
+        const container = document.getElementById('book-container');
+        document.getElementById('navigation').classList.remove('hidden');
+        
+        let tocHTML = `
+            <div class="toc-page fade-in">
+                <div class="chapter-header">
+                    <h2 class="chapter-title">สารบัญ</h2>
+                </div>
+                <div class="toc-list">
+        `;
+
+        this.data.chapters.forEach((chapter, index) => {
+            tocHTML += `
+                <div class="toc-item" onclick="app.showChapter(${index})" style="cursor:pointer; margin-bottom: 20px; border-bottom: 1px dashed #ccc; padding-bottom: 10px;">
+                    <strong>บทที่ ${chapter.chapterNumber} — ${chapter.title}</strong><br>
+                    <small>«${chapter.subtitle}»</small>
+                </div>
+            `;
+        });
+
+        tocHTML += `</div></div>`;
+        container.innerHTML = tocHTML;
+        this.updateNavButtons();
+    },
+
+    // แสดงหน้าบทความ
+    showChapter: function(index) {
+        this.currentView = 'chapter';
+        this.currentChapterIndex = index;
+        const chapter = this.data.chapters[index];
+        const container = document.getElementById('book-container');
+        
+        container.innerHTML = `
+            <div class="chapter-page fade-in">
+                <div class="chapter-header">
+                    <div class="chapter-number">CHAPTER ${chapter.chapterNumber}</div>
+                    <h2 class="chapter-title">${chapter.title}</h2>
+                </div>
+                ${chapter.mainImage ? `<img src="${chapter.mainImage}" class="chapter-image">` : ''}
+                <div class="chapter-content">
+                    <p>${chapter.content}</p>
+                </div>
+            </div>
+        `;
+        this.updateNavButtons();
+    },
+
+    // ระบบเปลี่ยนหน้า
+    nextPage: function() {
+        if (this.currentView === 'toc') {
+            this.showChapter(0);
+        } else if (this.currentView === 'chapter' && this.currentChapterIndex < this.data.chapters.length - 1) {
+            this.showChapter(this.currentChapterIndex + 1);
+        }
+    },
+
+    prevPage: function() {
+        if (this.currentView === 'chapter') {
+            if (this.currentChapterIndex === 0) {
+                this.showTOC();
+            } else {
+                this.showChapter(this.currentChapterIndex - 1);
+            }
+        } else if (this.currentView === 'toc') {
+            this.renderCover();
+        }
+    },
+
+    // อัปเดตการแสดงผลปุ่ม ซ้าย-ขวา
+    updateNavButtons: function() {
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        
+        if (this.currentView === 'toc') {
+            btnPrev.style.visibility = 'visible';
+            btnNext.style.visibility = 'visible';
+        } else if (this.currentView === 'chapter') {
+            btnNext.style.visibility = this.currentChapterIndex === this.data.chapters.length - 1 ? 'hidden' : 'visible';
+        }
+    }
+};
+
+// เริ่มการทำงานเมื่อโหลดเว็บเสร็จ
+window.onload = () => app.init();
