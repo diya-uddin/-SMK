@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Basketball Story</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- ใช้ฟอนต์ที่มีความเป็นหนังสือจาก Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&family=Pridi:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="book-container" class="book-container">
+        <!-- เนื้อหาของหนังสือจะถูกสร้างด้วย JavaScript และแทรกที่นี่ -->
+    </div>
+
+    <!-- แถบนำทาง (Navigation) -->
+    <nav id="navigation" class="navigation hidden">
+        <button id="btn-prev" onclick="app.prevPage()">« ก่อนหน้า</button>
+        <button id="btn-toc" onclick="app.showTOC()">สารบัญ</button>
+        <button id="btn-next" onclick="app.nextPage()">ถัดไป »</button>
+    </nav>
+
+    <script src="app.js"></script>
+</body>
+</html>
